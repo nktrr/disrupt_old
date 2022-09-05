@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -108,12 +107,21 @@ func parseStructs(file FileInfo) {
 func parseFunctions(file FileInfo) {
 	reg := getAllFunctions()
 	functions := reg.FindString(file.content)
-	functionsSplit := regexp.MustCompile("^func |\nfunc ").Split(functions, -1)
-	//functionsSplit := strings.Split(functions, "func ")
+	functionsSplit := getFuncSignature().Split(functions, -1)
+	signatures := getFuncSignature().FindAllString(functions, -1)
 	functionsSplit = removeEmptyStrings(functionsSplit)
-	for _, s := range functionsSplit {
+	for i, s := range functionsSplit {
 		s = getCommentary().ReplaceAllString(s, "")
 		functionName := getFuncName().FindString(s)
+		functionName = signatures[i]
+		if strings.Count(functionName, "(") == 1 {
+			functionName = strings.Split(functionName, "(")[0]
+			functionName = strings.Split(functionName, " ")[1]
+		} else {
+			functionName = strings.Split(functionName, ")")[1]
+			functionName = strings.Split(functionName, "(")[0]
+			functionName = strings.TrimSpace(functionName)
+		}
 		s = strings.Replace(s, functionName, "", 1)
 		file.functions[functionName] = s
 	}

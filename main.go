@@ -3,34 +3,41 @@ package main
 import (
 	"bytes"
 	"github.com/goccy/go-graphviz"
+	"github.com/goccy/go-graphviz/cgraph"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 func main() {
 	//path := os.Args[0]
-	path := "C:\\Users\\Nekit\\GolandProjects\\avito-test"
+	path := "C:\\Users\\Nekit\\GolandProjects\\GStation"
 	parseProjectToGraph(path)
 }
 
 func parseProjectToGraph(path string) {
 	goFiles := getAllGoFiles(path)
 	files := parseFiles(goFiles)
-	visualize(files)
+	findCalls(files)
 }
 
-func visualize(files []FileInfo) {
+func findCalls(files []FileInfo) {
 	g := graphviz.New()
 	graph, err := g.Graph()
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	funcArray := filesToFuncArray(files, graph)
 	for _, file := range files {
-		for name, _ := range file.structs {
-			graph.CreateNode(name)
+		for funcName, function := range file.functions {
+			funcSignature := file.pack + "." + funcName
+			calls := checkCalls(funcArray, function, file.pack)
+			for _, call := range calls {
+				node1 := funcArray[funcSignature]
+				node2 := funcArray[call]
+				graph.CreateEdge(call, node1, node2)
+			}
 		}
 	}
 
@@ -38,7 +45,6 @@ func visualize(files []FileInfo) {
 	if err := g.Render(graph, graphviz.PNG, &buf); err != nil {
 		log.Fatal(err)
 	}
-
 	// 2. get as image.Image instance
 	_, err = g.RenderImage(graph)
 	if err != nil {
@@ -49,7 +55,32 @@ func visualize(files []FileInfo) {
 	if err := g.RenderFilename(graph, graphviz.PNG, "C:/Users/Nekit/GolandProjects/disrupt/graph.png"); err != nil {
 		log.Fatal(err)
 	}
+}
 
+func checkCalls(functions map[string]*cgraph.Node, function string, pack string) []string {
+	calls := make([]string, 0)
+	for s, _ := range functions {
+		temp := s
+		if strings.Split(temp, ".")[0] == pack {
+			temp = strings.Split(temp, ".")[1]
+		}
+		temp = temp + "("
+		if strings.Contains(function, temp) {
+			calls = append(calls, s)
+		}
+	}
+	return calls
+}
+
+func filesToFuncArray(files []FileInfo, graph *cgraph.Graph) map[string]*cgraph.Node {
+	functions := make(map[string]*cgraph.Node, 0)
+	for _, file := range files {
+		for funcName := range file.functions {
+			signature := file.pack + "." + funcName
+			functions[signature], _ = graph.CreateNode(signature)
+		}
+	}
+	return functions
 }
 
 func parseFiles(filesPath []string) []FileInfo {
@@ -77,9 +108,14 @@ func parseStructs(file FileInfo) {
 func parseFunctions(file FileInfo) {
 	reg := getAllFunctions()
 	functions := reg.FindString(file.content)
-	functionsSplit := strings.Split(functions, "func ")
+	functionsSplit := regexp.MustCompile("^func |\nfunc ").Split(functions, -1)
+	//functionsSplit := strings.Split(functions, "func ")
+	functionsSplit = removeEmptyStrings(functionsSplit)
 	for _, s := range functionsSplit {
-		println(s)
+		s = getCommentary().ReplaceAllString(s, "")
+		functionName := getFuncName().FindString(s)
+		s = strings.Replace(s, functionName, "", 1)
+		file.functions[functionName] = s
 	}
 }
 
@@ -95,6 +131,9 @@ func parseFile(path string) (FileInfo, error) {
 	if err == nil {
 		fileInfo.content = string(buf)
 	}
+	pack := getPackageName().FindString(fileInfo.content)
+	pack = strings.Replace(pack, "package ", "", 1)
+	fileInfo.pack = pack
 	return fileInfo, err
 }
 
@@ -118,4 +157,14 @@ func getAllGoFiles(path string) []string {
 		log.Println(err)
 	}
 	return goFilesPath
+}
+
+func removeEmptyStrings(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }

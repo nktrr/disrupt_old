@@ -18,5 +18,11 @@ func getStruct() *regexp.Regexp {
 }
 
 func getFuncName() *regexp.Regexp {
-	re := regexp.MustCompile()
+	re := regexp.MustCompile("^[\\d|\\w]+")
+	return re
+}
+
+func getCommentary() *regexp.Regexp {
+	re := regexp.MustCompile("\\/\\*[\\w|\\W]*\\*\\/")
+	return re
 }

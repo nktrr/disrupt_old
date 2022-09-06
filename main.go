@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/goccy/go-graphviz"
 	"github.com/goccy/go-graphviz/cgraph"
 	"io/ioutil"
@@ -12,18 +13,19 @@ import (
 )
 
 func main() {
-	//path := os.Args[0]
-	path := "C:\\Users\\Nekit\\GolandProjects\\GStation"
+	var path string
+	print("Project directory: ")
+	fmt.Fscan(os.Stdin, &path)
 	parseProjectToGraph(path)
 }
 
 func parseProjectToGraph(path string) {
 	goFiles := getAllGoFiles(path)
 	files := parseFiles(goFiles)
-	findCalls(files)
+	findCalls(files, path)
 }
 
-func findCalls(files []FileInfo) {
+func findCalls(files []FileInfo, path string) {
 	g := graphviz.New()
 	graph, err := g.Graph()
 
@@ -51,7 +53,8 @@ func findCalls(files []FileInfo) {
 	}
 
 	// 3. write to file directly
-	if err := g.RenderFilename(graph, graphviz.PNG, "C:/Users/Nekit/GolandProjects/disrupt/graph.png"); err != nil {
+	pathToPng := path + "\\disrupt.png"
+	if err := g.RenderFilename(graph, graphviz.PNG, pathToPng); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -114,7 +117,7 @@ func parseFunctions(file FileInfo) {
 		s = getCommentary().ReplaceAllString(s, "")
 		functionName := getFuncName().FindString(s)
 		functionName = signatures[i]
-		if strings.Count(functionName, "(") == 1 {
+		if simpleFunc().MatchString(functionName) {
 			functionName = strings.Split(functionName, "(")[0]
 			functionName = strings.Split(functionName, " ")[1]
 		} else {

@@ -28,6 +28,12 @@ func getCommentary() *regexp.Regexp {
 }
 
 func getFuncSignature() *regexp.Regexp {
-	re := regexp.MustCompile("func [\\w|\\d| |*|(|)|.|,|\\[\\]]*")
+	re := regexp.MustCompile("func [^[][\\w|\\d| |*|(|)|.|,|\\[\\]]*")
 	return re
+}
+
+func simpleFunc() *regexp.Regexp {
+	re := regexp.MustCompile("func [\\w|\\d]+")
+	return re
+
 }

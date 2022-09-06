@@ -4,4 +4,6 @@ Usage: start .exe and enter project path. Image would be created in project dire
 
 ###Output example
 
-https://github.com/nktrr/disrupt/blob/master/example.png
+[![main](images/main.png)](https://github.com/nktrr/disrupt/blob/master/example.png)
+
+

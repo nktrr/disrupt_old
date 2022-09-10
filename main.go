@@ -149,6 +149,7 @@ func parseFile(path string) (FileInfo, error) {
 	return fileInfo, err
 }
 
+//todo: check root files parsing
 func getAllGoFiles(path string) []string {
 	goFilesPath := make([]string, 0)
 	err := filepath.Walk(path,

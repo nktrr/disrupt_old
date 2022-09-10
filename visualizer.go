@@ -13,15 +13,22 @@ func vizualize(graph Graph, path string) {
 	nodes := make(map[string]*cgraph.Node, 0)
 	for _, function := range graph.functions {
 		node, _ := graphv.CreateNode(function.pack + "." + function.name)
-		node.SetLabel(function.funcSignature)
 		nodes[function.funcSignature] = node
 	}
 
 	for _, function := range graph.functions {
 		for _, call := range function.calls {
+			if call.callFunc.name == "MoveY" {
+				print("found")
+			}
 			firstNode := nodes[function.funcSignature]
 			secondNode := nodes[call.callFunc.funcSignature]
-			graphv.CreateEdge(goroutineCall, firstNode, secondNode)
+
+			edge, _ := graphv.CreateEdge(goroutineCall, firstNode, secondNode)
+
+			if call.goroutine {
+				edge.SetStyle("dashed")
+			}
 		}
 	}
 

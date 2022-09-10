@@ -11,7 +11,7 @@ func parseProject(path string) {
 	graph := newGraph()
 	files := newParseFiles(goFiles)
 	addStructsAndFuncSignatures(graph, files)
-	newCheckCalls(graph)
+	newCheckCalls(&graph)
 	vizualize(graph, path)
 }
 
@@ -82,30 +82,33 @@ func getFunctions(file FileInfo) []Function {
 	return functions
 }
 
-func newCheckCalls(graph Graph) {
+func newCheckCalls(graph *Graph) {
 	for _, function := range graph.functions {
 		for _, possibleFunction := range graph.functions {
 			if function.pack != possibleFunction.pack || function.funcSignature != possibleFunction.funcSignature {
-				checkFunction(graph, function, possibleFunction)
+				checkFunction(graph, &function, possibleFunction)
 			}
 		}
 	}
 }
 
-func checkFunction(graph Graph, function Function, checkFunction Function) {
+func checkFunction(graph *Graph, function *Function, checkFunction Function) {
 	var reg *regexp.Regexp
 	if checkFunction.funcType == structFunc {
-		reg = regexp.MustCompile("(go )?[\\w|\\d|.]+" + checkFunction.name)
+		reg = regexp.MustCompile("(go )?[\\w|\\d|.]+" + checkFunction.name + "[^\\d|\\w]")
 	} else {
-		reg = regexp.MustCompile("(go )?" + checkFunction.name)
+		reg = regexp.MustCompile("(go )?" + checkFunction.name + "[^\\d|\\w]")
 	}
 	if reg.MatchString(function.content) {
 		call := Call{checkFunction, false}
-		if strings.Contains("go ", reg.FindString(function.content)) {
+		if strings.Contains(reg.FindString(function.content), "go ") {
 			call.goroutine = true
 		}
+		if function.name == "run" {
+			print("here")
+		}
 		function.calls = append(function.calls, call)
-		graph.functions[function.pack+"."+function.name] = function
+		graph.functions[function.pack+"."+function.name] = *function
 	}
 }
 

@@ -3,7 +3,6 @@ package main
 type Graph struct {
 	functions map[string]Function
 	structs   []string
-	//calls     map[Function][]Function
 }
 
 func newGraph() Graph {
@@ -26,13 +25,14 @@ type Function struct {
 	funcType      string
 	funcStruct    string
 	funcSignature string
+	isReturnType  bool
 	returnType    string
 	calls         []Call
 }
 
 type Call struct {
-	callFunc Function
-	callType string
+	callFunc  Function
+	goroutine bool
 }
 
 const (

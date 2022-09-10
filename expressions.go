@@ -37,3 +37,8 @@ func simpleFunc() *regexp.Regexp {
 	return re
 
 }
+
+func nonStructFuncArguments() *regexp.Regexp {
+	re := regexp.MustCompile("\\([\\w|\\d|,| |\\[|\\]]+\\)")
+	return re
+}

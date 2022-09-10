@@ -11,6 +11,8 @@ func parseProject(path string) {
 	graph := newGraph()
 	files := newParseFiles(goFiles)
 	addStructsAndFuncSignatures(graph, files)
+	newCheckCalls(graph)
+	vizualize(graph, path)
 }
 
 func addStructsAndFuncSignatures(graph Graph, files []FileInfo) {
@@ -52,11 +54,59 @@ func getFunctions(file FileInfo) []Function {
 			function.funcType = nonStructFunc
 		}
 
-		//add function return parsing
+		// function return parsing
+		temp := regexp.MustCompile("[()]").Split(function.funcSignature, -1)
+		temp = removeEmptyStrings(temp)
 
+		if function.funcType == structFunc {
+			if len(temp) == 3 || len(temp) == 4 {
+				function.isReturnType = false
+			} else {
+				function.returnType = temp[4]
+			}
+		} else {
+			if len(temp) == 2 {
+				if nonStructFuncArguments().MatchString(function.funcSignature) {
+					function.isReturnType = false
+				} else {
+					function.isReturnType = true
+					function.returnType = temp[1]
+				}
+			} else if len(temp) == 3 {
+				function.isReturnType = true
+				function.returnType = temp[2]
+			}
+		}
 		functions = append(functions, function)
 	}
 	return functions
+}
+
+func newCheckCalls(graph Graph) {
+	for _, function := range graph.functions {
+		for _, possibleFunction := range graph.functions {
+			if function.pack != possibleFunction.pack || function.funcSignature != possibleFunction.funcSignature {
+				checkFunction(graph, function, possibleFunction)
+			}
+		}
+	}
+}
+
+func checkFunction(graph Graph, function Function, checkFunction Function) {
+	var reg *regexp.Regexp
+	if checkFunction.funcType == structFunc {
+		reg = regexp.MustCompile("(go )?[\\w|\\d|.]+" + checkFunction.name)
+	} else {
+		reg = regexp.MustCompile("(go )?" + checkFunction.name)
+	}
+	if reg.MatchString(function.content) {
+		call := Call{checkFunction, false}
+		if strings.Contains("go ", reg.FindString(function.content)) {
+			call.goroutine = true
+		}
+		function.calls = append(function.calls, call)
+		graph.functions[function.pack+"."+function.name] = function
+	}
 }
 
 func newParseFiles(filesPath []string) []FileInfo {

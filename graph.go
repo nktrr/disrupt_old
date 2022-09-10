@@ -2,7 +2,12 @@ package main
 
 type Graph struct {
 	functions map[string]Function
-	calls     map[Function][]Function
+	structs   []string
+	//calls     map[Function][]Function
+}
+
+func newGraph() Graph {
+	return Graph{functions: make(map[string]Function), structs: make([]string, 0)}
 }
 
 type FileInfo struct {
@@ -15,6 +20,25 @@ type FileInfo struct {
 }
 
 type Function struct {
-	pack string
-	name string
+	pack          string
+	name          string
+	content       string
+	funcType      string
+	funcStruct    string
+	funcSignature string
+	returnType    string
+	calls         []Call
 }
+
+type Call struct {
+	callFunc Function
+	callType string
+}
+
+const (
+	structFunc    = "objectFunc"
+	nonStructFunc = "nonObjectFunc"
+	returnFunc    = "returnFunc"
+	nonReturnFunc = "nonReturnFunc"
+	goroutineCall = "goroutineCall"
+)

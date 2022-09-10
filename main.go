@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/goccy/go-graphviz"
 	"github.com/goccy/go-graphviz/cgraph"
 	"io/ioutil"
@@ -14,9 +13,10 @@ import (
 
 func main() {
 	var path string
-	print("Project directory: ")
-	fmt.Fscan(os.Stdin, &path)
-	parseProjectToGraph(path)
+	//print("Project directory: ")
+	//fmt.Fscan(os.Stdin, &path)
+	path = "C:\\Users\\Nekit\\GolandProjects\\GStation"
+	parseProject(path)
 }
 
 func parseProjectToGraph(path string) {
@@ -54,6 +54,7 @@ func findCalls(files []FileInfo, path string) {
 
 	// 3. write to file directly
 	pathToPng := path + "\\disrupt.png"
+	graph.SetScale(100, 100)
 	if err := g.RenderFilename(graph, graphviz.PNG, pathToPng); err != nil {
 		log.Fatal(err)
 	}

@@ -41,7 +41,7 @@ func visualize(graph Graph, path string) {
 	}
 
 	// 3. write to file directly
-	pathToPng := path + "\\disruptnew.png"
+	pathToPng := path + "\\disrupt.png"
 	graphv.SetScale(100, 100)
 	if err := g.RenderFilename(graphv, graphviz.PNG, pathToPng); err != nil {
 		log.Fatal(err)

@@ -7,7 +7,8 @@ import (
 	"log"
 )
 
-func vizualize(graph Graph, path string) {
+//todo check the drawing of big names on the graph
+func visualize(graph Graph, path string) {
 	g := graphviz.New()
 	graphv, err := g.Graph()
 	nodes := make(map[string]*cgraph.Node, 0)
@@ -18,9 +19,6 @@ func vizualize(graph Graph, path string) {
 
 	for _, function := range graph.functions {
 		for _, call := range function.calls {
-			if call.callFunc.name == "MoveY" {
-				print("found")
-			}
 			firstNode := nodes[function.funcSignature]
 			secondNode := nodes[call.callFunc.funcSignature]
 

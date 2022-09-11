@@ -38,7 +38,5 @@ type Call struct {
 const (
 	structFunc    = "objectFunc"
 	nonStructFunc = "nonObjectFunc"
-	returnFunc    = "returnFunc"
-	nonReturnFunc = "nonReturnFunc"
 	goroutineCall = "goroutineCall"
 )

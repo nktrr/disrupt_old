@@ -12,7 +12,7 @@ func parseProject(path string) {
 	files := newParseFiles(goFiles)
 	addStructsAndFuncSignatures(graph, files)
 	newCheckCalls(&graph)
-	vizualize(graph, path)
+	visualize(graph, path)
 }
 
 func addStructsAndFuncSignatures(graph Graph, files []FileInfo) {
@@ -22,14 +22,13 @@ func addStructsAndFuncSignatures(graph Graph, files []FileInfo) {
 			graph.functions[function.pack+"."+function.name] = function
 		}
 	}
-	print("a")
 }
 
 func getFunctions(file FileInfo) []Function {
 	funcSigntures := getFuncSignature().FindAllString(file.content, -1)
 	funcContent := getFuncSignature().Split(file.content, -1)
 	functions := make([]Function, 0)
-	for i := 1; i < len(funcSigntures); i++ {
+	for i := 1; i <= len(funcSigntures); i++ {
 		function := Function{}
 		function.pack = file.pack
 		function.content = funcContent[i]
@@ -104,9 +103,6 @@ func checkFunction(graph *Graph, function *Function, checkFunction Function) {
 		if strings.Contains(reg.FindString(function.content), "go ") {
 			call.goroutine = true
 		}
-		if function.name == "run" {
-			print("here")
-		}
 		function.calls = append(function.calls, call)
 		graph.functions[function.pack+"."+function.name] = *function
 	}
@@ -139,8 +135,4 @@ func newParseFile(path string) (FileInfo, error) {
 	pack = strings.Replace(pack, "package ", "", 1)
 	fileInfo.pack = pack
 	return fileInfo, err
-}
-
-func newParseFileFunctions(file FileInfo) {
-
 }

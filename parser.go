@@ -4,15 +4,22 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func parseProject(path string) {
+	startTime := time.Now()
 	goFiles := getAllGoFiles(path)
 	graph := newGraph()
+	println("graph: ", time.Since(startTime).Milliseconds())
 	files := newParseFiles(goFiles)
+	println("files: ", time.Since(startTime).Milliseconds())
 	addStructsAndFuncSignatures(graph, files)
+	println("func signs: ", time.Since(startTime).Milliseconds())
 	newCheckCalls(&graph)
+	println("check calls: ", time.Since(startTime).Milliseconds())
 	visualize(graph, path)
+	println("visualize: ", time.Since(startTime).Milliseconds())
 }
 
 func addStructsAndFuncSignatures(graph Graph, files []FileInfo) {

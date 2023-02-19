@@ -30,6 +30,7 @@ func visualize(graph Graph, path string) {
 		}
 	}
 
+	g.RenderFilename(graphv, graphviz.XDOT, path+"\\disrupt.dot")
 	var buf bytes.Buffer
 	if err := g.Render(graphv, graphviz.PNG, &buf); err != nil {
 		log.Fatal(err)
